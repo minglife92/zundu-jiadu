@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>尊嘟假嘟</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1d1a17;
+  --ink-soft:#4a423a;
+  --paper:#f2e8d3;
+  --paper-2:#e9dcc0;
+  --zhu:#a8261b;        /* 朱砂 */
+  --zhu-soft:rgba(168,38,27,.42);
+  --gold:#c9a96a;
+  --gold-deep:#8f7240;
+  --bg:#120f0d;
+  --cell:min(5.7vh, 4.6vw);
+  --kai:"Ma Shan Zheng","KaiTi","STKaiti","楷体",serif;
+  --song:"Noto Serif SC","Songti SC","SimSun",serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 42%, #2b241e 0%, #17130f 55%, #0b0907 100%);
+  color:var(--paper);
+  font-family:var(--song);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  touch-action:manipulation; /* 去掉双击缩放、点击延迟 */
+}
+body::before{ /* 暗纹 */
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .8  0 0 0 0 .7  0 0 0 0 .5  0 0 0 .06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* ---------- 顶栏 ---------- */
+.topbar{
+  position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;
+  padding:18px 28px;z-index:5;
+}
+.brand{font-family:var(--song);letter-spacing:.5em;font-size:13px;color:var(--gold);opacity:.75}
+.brand b{font-weight:600;color:#e6cf9c}
+.tools{display:flex;gap:10px}
+.btn{
+  font-family:var(--song);font-size:13px;letter-spacing:.35em;padding:7px 10px 7px 16px;
+  background:transparent;color:var(--gold);border:1px solid rgba(201,169,106,.45);
+  cursor:pointer;transition:.25s;
+}
+.btn:hover{background:rgba(201,169,106,.12);color:#f0dcae;border-color:var(--gold)}
+
+/* ---------- 舞台 ---------- */
+.stage{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--cell)*.45)}
+
+/* 节目标题 */
+.show-title{display:flex;align-items:center;gap:22px;margin-bottom:calc(var(--cell)*.15)}
+.show-title h2{
+  font-family:var(--kai);font-weight:400;font-size:calc(var(--cell)*1.05);letter-spacing:.32em;padding-left:.32em;line-height:1;
+  background:linear-gradient(180deg,#f6e4b4 0%,#d6b170 50%,#a8854a 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 3px 12px rgba(0,0,0,.5));
+}
+.show-title .orn{width:calc(var(--cell)*2.2);height:1px;background:linear-gradient(90deg,transparent,var(--gold));position:relative}
+.show-title .orn.r{transform:scaleX(-1)}
+.show-title .orn::after{content:"";position:absolute;right:-4px;top:-3.5px;width:7px;height:7px;background:var(--gold);transform:rotate(45deg)}
+.intro-show{margin-bottom:44px}
+.intro-show h2{font-size:min(7vh,56px)}
+.slot.rev{background:var(--gold-deep);border-color:var(--gold-deep);color:#f6e7d6;filter:url(#rough);animation:stamp .45s cubic-bezier(.2,1.6,.4,1)}
+.btn:disabled{opacity:.35;cursor:default;background:transparent}
+#btnReveal{
+  font-family:var(--kai);font-size:20px;letter-spacing:.3em;padding:9px 14px 9px 22px;
+  color:#fbeedd;background:linear-gradient(180deg,#c2342a,#931f16);
+  border:1px solid #e0b875;box-shadow:0 0 0 3px rgba(168,38,27,.25), 0 6px 20px rgba(168,38,27,.45);
+  animation:pulse 2.4s ease-in-out infinite;
+}
+#btnReveal:hover:not(:disabled){background:linear-gradient(180deg,#d23d31,#a3241a);color:#fff}
+#btnReveal:disabled{animation:none;background:rgba(168,38,27,.25);box-shadow:none;border-color:rgba(224,184,117,.3);opacity:.6}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(168,38,27,.12), 0 6px 26px rgba(194,52,42,.7)}}
+
+/* 手卷 */
+.scroll{position:relative;padding:0 calc(var(--cell)*.32)}
+.rod{
+  position:absolute;top:calc(var(--cell)*-.35);bottom:calc(var(--cell)*-.35);width:calc(var(--cell)*.38);
+  background:linear-gradient(90deg,#2a1a10,#5b3a22 35%,#7a5132 50%,#4a2e1a 70%,#1e130b);
+  border-radius:4px;z-index:3;box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+.rod::before,.rod::after{ /* 金色轴头 */
+  content:"";position:absolute;left:-18%;right:-18%;height:calc(var(--cell)*.32);
+  background:linear-gradient(90deg,#6d5528,#e8cf8e 45%,#b8954f 60%,#5d4520);
+  border-radius:3px;
+}
+.rod::before{top:-4px}.rod::after{bottom:-4px}
+.rod-l{left:0}.rod-r{right:0}
+
+.paper{
+  position:relative;display:flex;align-items:stretch;
+  padding:calc(var(--cell)*.7) calc(var(--cell)*.75);
+  gap:calc(var(--cell)*.55);
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .42  0 0 0 0 .32  0 0 0 0 .18  0 0 0 .28 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    radial-gradient(ellipse at 30% 20%, #f7efdc, transparent 60%),
+    radial-gradient(ellipse at 80% 90%, #e4d3b0, transparent 55%),
+    var(--paper);
+  color:var(--ink);
+  box-shadow:0 30px 80px rgba(0,0,0,.55), inset 0 0 calc(var(--cell)*1.2) rgba(120,90,40,.22);
+}
+.paper::before{ /* 金线双框 */
+  content:"";position:absolute;inset:calc(var(--cell)*.22);
+  border:1px solid rgba(143,114,64,.55);
+  outline:1px solid rgba(143,114,64,.3);outline-offset:4px;pointer-events:none;
+}
+
+/* 题签列 */
+.title-col{
+  writing-mode:vertical-rl;display:flex;align-items:center;gap:calc(var(--cell)*.3);
+  padding-left:calc(var(--cell)*.2);
+}
+.title-col h1{
+  font-family:var(--kai);font-weight:400;font-size:calc(var(--cell)*1.05);letter-spacing:.18em;color:var(--ink);
+}
+.title-col .by{font-family:var(--song);font-size:calc(var(--cell)*.24);letter-spacing:.5em;color:var(--ink-soft);opacity:.8}
+
+/* 跋列 */
+.side-col{
+  writing-mode:vertical-rl;display:flex;justify-content:space-between;align-items:center;
+}
+.side-col p{font-family:var(--kai);font-size:calc(var(--cell)*.36);letter-spacing:.3em;color:var(--ink-soft)}
+.seal{
+  writing-mode:horizontal-tb;width:calc(var(--cell)*.9);height:calc(var(--cell)*.9);
+  background:var(--zhu);color:#f6e7d6;display:grid;grid-template-columns:1fr 1fr;place-items:center;
+  font-family:var(--song);font-weight:900;font-size:calc(var(--cell)*.32);line-height:1;
+  padding:calc(var(--cell)*.07);border-radius:3px;filter:url(#rough);opacity:.92;
+  box-shadow:inset 0 0 0 2px rgba(246,231,214,.85), inset 0 0 0 4px var(--zhu);
+}
+
+/* 正文格（朱丝栏） */
+.grid{
+  display:grid;direction:rtl;grid-auto-flow:column;
+  grid-template-rows:repeat(10,var(--cell));grid-auto-columns:var(--cell);
+  border-top:2px solid var(--zhu-soft);border-bottom:2px solid var(--zhu-soft);
+  border-right:1px solid var(--zhu-soft);
+}
+.cell{
+  position:relative;border:0;background:transparent;cursor:pointer;
+  border-left:1px solid var(--zhu-soft);
+  font-family:var(--kai);font-size:calc(var(--cell)*.74);line-height:1;color:var(--ink);
+  display:grid;place-items:center;
+  opacity:0;animation:inkIn .7s ease-out forwards;animation-delay:var(--d);
+  transition:background .25s;
+  -webkit-tap-highlight-color:transparent;
+}
+@media (hover:hover){ .cell:hover{background:radial-gradient(circle, rgba(201,169,106,.28), transparent 70%)} }
+.cell:active{background:radial-gradient(circle, rgba(201,169,106,.35), transparent 70%)}
+.cell:focus{outline:none}
+.cell .ch{grid-area:1/1;display:block;transform:translateY(.02em);text-shadow:0 0 .5px rgba(0,0,0,.5)}
+@keyframes inkIn{from{opacity:0;filter:blur(6px);transform:scale(1.12)}to{opacity:1;filter:blur(0);transform:none}}
+
+/* 点错 */
+.cell.miss{animation:shake .45s cubic-bezier(.36,.07,.19,.97) both;opacity:1}
+@keyframes shake{
+  10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(3px)}
+  30%,50%,70%{transform:translateX(-5px)}40%,60%{transform:translateX(5px)}
+}
+.mark{position:absolute;inset:-8%;width:116%;height:116%;overflow:visible;pointer-events:none;filter:url(#brush)}
+.mark path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.mark.x path{stroke:rgba(60,52,46,.75);stroke-width:5;stroke-dasharray:1;stroke-dashoffset:1;animation:draw .22s ease-out forwards}
+.mark.x path:nth-child(2){animation-delay:.14s}
+.mark.x{animation:fadeX 1.3s ease-in forwards}
+@keyframes fadeX{0%,55%{opacity:1}100%{opacity:0}}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+/* 点中 */
+.cell.fixed{cursor:default}
+.cell.fixed:hover{background:transparent}
+.mark.o path{stroke:var(--zhu);stroke-width:4.2;stroke-dasharray:1;stroke-dashoffset:1;animation:draw .65s cubic-bezier(.6,.1,.3,1) forwards;opacity:.9}
+.cell.revealed .mark.o path{stroke:var(--gold-deep);stroke-dasharray:.04 .03;animation:none;stroke-dashoffset:0}
+.ch.out{animation:inkOut .6s ease-in forwards}
+@keyframes inkOut{to{opacity:0;filter:blur(8px);transform:scale(.85)}}
+.ch.new{
+  color:var(--zhu);
+  -webkit-mask-image:linear-gradient(to bottom,#000 45%,transparent 55%);mask-image:linear-gradient(to bottom,#000 45%,transparent 55%);
+  -webkit-mask-size:100% 220%;mask-size:100% 220%;
+  -webkit-mask-position:0 100%;mask-position:0 100%;
+  animation:write 1s cubic-bezier(.5,0,.3,1) forwards;
+}
+.cell.revealed .ch.new{color:var(--gold-deep)}
+@keyframes write{
+  from{-webkit-mask-position:0 100%;mask-position:0 100%;filter:blur(2px)}
+  to{-webkit-mask-position:0 0;mask-position:0 0;filter:blur(0)}
+}
+.note{ /* 小字批注：原误字 */
+  position:absolute;left:4%;bottom:3%;font-family:var(--kai);font-size:calc(var(--cell)*.24);
+  color:var(--ink-soft);opacity:0;text-decoration:line-through;text-decoration-color:var(--zhu);
+  animation:noteIn .5s ease-out 1.1s forwards;
+}
+@keyframes noteIn{to{opacity:.75}}
+
+/* ---------- 底部信息 ---------- */
+.hud{display:flex;align-items:center;gap:calc(var(--cell)*.9);font-size:14px;letter-spacing:.4em;color:rgba(242,232,211,.7)}
+.hud .label{font-size:12px;color:var(--gold);opacity:.8;margin-right:.6em}
+.hud .val{font-family:var(--kai);font-size:22px;letter-spacing:.12em;color:#efe2c4}
+.slots{display:flex;gap:10px}
+.slot{
+  width:34px;height:34px;border:1px solid rgba(201,169,106,.5);display:grid;place-items:center;
+  font-family:var(--kai);font-size:22px;color:transparent;transition:.5s;
+}
+.slot.on{background:var(--zhu);border-color:var(--zhu);color:#f6e7d6;filter:url(#rough);animation:stamp .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes stamp{from{transform:scale(1.8) rotate(-12deg);opacity:0}to{transform:none;opacity:1}}
+.divider{width:1px;height:22px;background:rgba(201,169,106,.3)}
+
+/* ---------- 提示语 ---------- */
+.toast{
+  position:fixed;left:50%;top:46%;transform:translate(-50%,-50%);z-index:20;pointer-events:none;
+  text-align:center;opacity:0;
+}
+.toast .w{font-family:var(--kai);font-size:calc(var(--cell)*2.3);line-height:1;letter-spacing:.08em;text-shadow:0 6px 30px rgba(0,0,0,.35)}
+.toast .s{margin-top:14px;font-family:var(--song);font-size:calc(var(--cell)*.32);letter-spacing:.35em;padding:6px 18px;display:inline-block}
+.toast.ok .w{color:var(--zhu)}
+.toast.ok .s{color:#f6e7d6;background:var(--zhu)}
+.toast.no .w{color:#2b2622}
+.toast.no .s{color:var(--paper);background:rgba(29,26,23,.85)}
+.toast.show{animation:toast 1.4s ease forwards}
+.toast.no.show{animation:toastLong 3s ease forwards}
+@keyframes toastLong{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(1.25)}
+  7%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  88%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1)}
+}
+.toast.no .w{text-shadow:none}
+@keyframes toast{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(1.5);filter:blur(10px)}
+  18%{opacity:1;transform:translate(-50%,-50%) scale(1);filter:blur(0)}
+  72%{opacity:1}
+  100%{opacity:0;transform:translate(-50%,-56%) scale(.98);filter:blur(4px)}
+}
+
+/* ---------- 开场 / 终局 ---------- */
+.overlay{
+  position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 50% 45%, rgba(40,32,26,.92), rgba(8,6,5,.97));
+  transition:opacity .9s ease, visibility .9s;
+}
+.overlay.hide{opacity:0;visibility:hidden}
+.intro-title{display:flex;flex-direction:row-reverse;align-items:flex-start;gap:28px}
+.intro-title .big{writing-mode:vertical-rl;font-family:var(--kai);font-size:min(14vh,110px);letter-spacing:.12em;color:#efe2c4;line-height:1.1}
+.intro-title .sub{writing-mode:vertical-rl;font-family:var(--song);font-size:15px;letter-spacing:.7em;color:var(--gold);margin-top:18px}
+.intro-title .seal{width:54px;height:54px;font-size:19px;margin-top:auto}
+.intro-rule{margin:38px 0 30px;font-size:14px;letter-spacing:.42em;color:rgba(242,232,211,.6);text-align:center;line-height:2.2}
+.intro-rule em{font-style:normal;color:#e8c98a}
+.cta{
+  font-family:var(--kai);font-size:26px;letter-spacing:.6em;padding:12px 26px 12px 42px;
+  color:#f6e7d6;background:transparent;border:1px solid var(--gold);cursor:pointer;position:relative;transition:.3s;
+}
+.cta::before{content:"";position:absolute;inset:4px;border:1px solid rgba(201,169,106,.35);pointer-events:none}
+.cta:hover{background:rgba(168,38,27,.85);border-color:var(--zhu);letter-spacing:.7em}
+.hint{position:fixed;bottom:16px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.3em;color:rgba(201,169,106,.35)}
+
+.final .stampbig{
+  width:min(26vh,190px);height:min(26vh,190px);background:var(--zhu);color:#f6e7d6;filter:url(#rough);
+  display:grid;grid-template-columns:1fr 1fr;place-items:center;font-family:var(--kai);font-size:min(9vh,68px);line-height:1;
+  padding:12px;border-radius:6px;box-shadow:inset 0 0 0 4px rgba(246,231,214,.9), inset 0 0 0 8px var(--zhu);
+  transform:scale(2.2) rotate(-14deg);opacity:0;
+}
+.final.on .stampbig{animation:bigStamp .6s cubic-bezier(.2,1.5,.35,1) .25s forwards}
+@keyframes bigStamp{to{transform:rotate(-4deg);opacity:1}}
+.final h2{margin-top:36px;font-family:var(--kai);font-weight:400;font-size:min(7vh,52px);letter-spacing:.3em;color:#efe2c4}
+.final .stats{margin:18px 0 34px;display:flex;gap:40px;font-size:14px;letter-spacing:.4em;color:rgba(242,232,211,.65)}
+.final .stats b{font-family:var(--kai);font-weight:400;font-size:26px;color:#e8c98a;margin-left:.4em;letter-spacing:.1em}
+.final .answers{display:flex;gap:26px;margin-bottom:30px;font-family:var(--kai);font-size:22px;color:rgba(242,232,211,.85);letter-spacing:.15em}
+.final .answers s{color:rgba(242,232,211,.45);text-decoration-color:var(--zhu)}
+.final .answers i{font-style:normal;color:#e06a55}
+
+/* 开卷动画 */
+.scroll.unroll .paper{animation:unroll 1.4s cubic-bezier(.65,0,.25,1) both}
+.scroll.unroll .rod-l{animation:rodL 1.4s cubic-bezier(.65,0,.25,1) both}
+.scroll.unroll .rod-r{animation:rodR 1.4s cubic-bezier(.65,0,.25,1) both}
+@keyframes unroll{from{clip-path:inset(0 50% 0 50%)}to{clip-path:inset(0 0 0 0)}}
+@keyframes rodL{from{left:calc(50% - var(--cell)*.4)}to{left:0}}
+@keyframes rodR{from{right:calc(50% - var(--cell)*.4)}to{right:0}}
+/* ---------- 手机：竖屏 ---------- */
+@media (max-width:700px) and (orientation:portrait){
+  :root{--cell:min(8.4vw, 5.6vh)}
+  .side-col,.title-col,.hint,.brand{display:none}
+  .topbar{padding:12px;justify-content:center}
+  .btn{font-size:13px;padding:9px 8px 9px 14px;letter-spacing:.25em}
+  #btnReveal{font-size:16px;padding:8px 10px 8px 16px}
+  .paper{padding:calc(var(--cell)*.55) calc(var(--cell)*.5)}
+  .paper::before{inset:calc(var(--cell)*.18)}
+  .show-title .orn{width:calc(var(--cell)*1.4)}
+  .hud{gap:14px;font-size:13px;letter-spacing:.2em}
+  .hud .label{font-size:11px}
+  .hud .val{font-size:20px}
+  .slot{width:30px;height:30px;font-size:19px}
+  .slots{gap:6px}
+  .toast .w{font-size:calc(var(--cell)*2.6)}
+  .final .stats{gap:22px}
+  .final .answers{gap:16px;font-size:19px}
+}
+/* ---------- 手机：横屏 ---------- */
+@media (max-height:500px) and (orientation:landscape){
+  :root{--cell:min(6.6vh, 5vw)}
+  .hint,.brand{display:none}
+  .topbar{padding:10px 12px;justify-content:flex-end;align-items:flex-start}
+  .tools{flex-direction:column;gap:8px}
+  .stage{gap:6px}
+  .show-title{margin-bottom:2px}
+  .scroll .rod{top:-6px;bottom:-6px}
+  .paper{padding:calc(var(--cell)*.45) calc(var(--cell)*.6)}
+  .hud{font-size:12px}
+  .hud .val{font-size:17px}
+  .slot{width:26px;height:26px;font-size:17px}
+}
+
+.scroll.closed .paper{clip-path:inset(0 50% 0 50%)}
+.scroll.closed .rod-l{left:calc(50% - var(--cell)*.4)}
+.scroll.closed .rod-r{right:calc(50% - var(--cell)*.4)}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="brush"><feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="2" seed="3" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="4"/></filter>
+  <filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="2" seed="7" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="2.2"/></filter>
+</svg>
+
+<header class="topbar">
+  <div class="brand"><b>寻讹记</b> · 千字文</div>
+  <div class="tools">
+    <button class="btn" id="btnReveal" title="快捷键 R">揭晓答案</button>
+    <button class="btn" id="btnNew" title="快捷键 N">重来</button>
+    <button class="btn" id="btnSound" title="快捷键 M">声 · 开</button>
+  </div>
+</header>
+
+<main class="stage">
+  <div class="show-title"><span class="orn"></span><h2>尊嘟假嘟</h2><span class="orn r"></span></div>
+  <div class="scroll closed" id="scroll">
+    <div class="rod rod-l"></div>
+    <div class="rod rod-r"></div>
+    <div class="paper">
+      <div class="side-col">
+        <p>千字之中藏三讹　慧眼者识之</p>
+        <div class="seal"><span>假</span><span>尊</span><span>嘟</span><span>嘟</span></div>
+      </div>
+      <div class="grid" id="grid"></div>
+      <div class="title-col">
+        <h1>千字文</h1>
+        <span class="by">梁 · 周兴嗣 次韵</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hud">
+    <div><span class="label">已勘</span><span class="slots" id="slots"></span></div>
+    <div class="divider"></div>
+    <div><span class="label">计时</span><span class="val" id="time">00:00</span></div>
+    <div class="divider"></div>
+    <div><span class="label">误点</span><span class="val" id="miss">〇</span></div>
+  </div>
+</main>
+
+<div class="toast" id="toast"><div class="w"></div><div class="s"></div></div>
+
+
+<section class="overlay final hide" id="final">
+  <div class="stampbig"><span>圆</span><span>功</span><span>满</span><span>德</span></div>
+  <h2>三讹尽勘</h2>
+  <div class="stats"><span>用时<b id="fTime">00:00</b></span><span>误点<b id="fMiss">〇</b></span></div>
+  <div class="answers" id="fAns"></div>
+  <button class="cta" id="btnAgain">再来</button>
+</section>
+
+<div class="hint">快捷键 · R 揭晓下一处 · N 重来 · M 声音</div>
+
+<script>
+const TEXT = "天地玄黄宇宙洪荒日月盈昃辰宿列张寒来暑往秋收冬藏闰余成岁律吕调阳云腾致雨露结为霜金生丽水玉出昆冈剑号巨阙珠称夜光果珍李柰菜重芥姜海咸河淡鳞潜羽翔龙师火帝鸟官人皇始制文字乃服衣裳推位让国有虞陶唐吊民伐罪";
+
+// 固定答案：[正字, 误字] —— 改这里即可换题
+const ANSWERS = [ ["昃","仄"], ["阙","缺"], ["潜","浅"] ];
+const CN = ["〇","一","二","三","四","五","六","七","八","九","十"];
+
+const $ = s => document.querySelector(s);
+const grid = $("#grid"), scroll = $("#scroll");
+let S = {};
+
+function cnNum(n){ if(n<=10) return CN[n]; if(n<20) return "十"+(n%10?CN[n%10]:""); return String(n); }
+function fmt(ms){ const t=Math.floor(ms/1000); return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0"); }
+
+function pickErrors(){
+  return ANSWERS.map(([o,w])=>({i:TEXT.indexOf(o),orig:o,wrong:w}))
+                .filter(x=>x.i>=0).sort((a,b)=>a.i-b.i);
+}
+
+function newRound(withUnroll=true){
+  clearInterval(S.timer);
+  S = { errors:pickErrors(), found:new Set(), revealed:new Set(), misses:0, start:0, timer:null, done:false };
+  updateRevealBtn();
+  const chars=[...TEXT];
+  S.errors.forEach(e=>chars[e.i]=e.wrong);
+  grid.innerHTML="";
+  chars.forEach((c,i)=>{
+    const b=document.createElement("button");
+    b.className="cell"; b.dataset.i=i;
+    b.style.setProperty("--d",(0.9+i*0.014)+"s");
+    b.innerHTML=`<span class="ch">${c}</span>`;
+    grid.appendChild(b);
+  });
+  $("#slots").innerHTML=S.errors.map(()=>`<span class="slot"></span>`).join("");
+  $("#miss").textContent="〇"; $("#time").textContent="00:00";
+  $("#final").classList.add("hide"); $("#final").classList.remove("on");
+  if(withUnroll){
+    scroll.classList.remove("unroll"); scroll.classList.add("closed");
+    void scroll.offsetWidth;
+    scroll.classList.remove("closed"); scroll.classList.add("unroll");
+  }
+  S.start=performance.now();
+  S.timer=setInterval(()=>{ $("#time").textContent=fmt(performance.now()-S.start); },250);
+}
+
+function toast(word, sub, kind){
+  const t=$("#toast");
+  t.className="toast "+kind;
+  t.querySelector(".w").textContent=word;
+  t.querySelector(".s").textContent=sub;
+  void t.offsetWidth; t.classList.add("show");
+}
+
+const X_SVG = `<svg class="mark x" viewBox="0 0 100 100"><path pathLength="1" d="M28 26 C40 40,56 58,74 76"/><path pathLength="1" d="M73 25 C60 40,44 58,27 75"/></svg>`;
+const O_SVG = `<svg class="mark o" viewBox="0 0 100 100"><path pathLength="1" d="M74 20 C58 6,22 10,13 40 C5 72,36 95,64 88 C92 80,97 46,82 27 C74 17,62 13,50 14"/></svg>`;
+
+function fix(cell, err, revealed=false){
+  cell.classList.add("fixed");
+  if(revealed) cell.classList.add("revealed");
+  cell.insertAdjacentHTML("beforeend", O_SVG);
+  const old=cell.querySelector(".ch");
+  setTimeout(()=>{
+    old.classList.add("out");
+    const n=document.createElement("span");
+    n.className="ch new"; n.textContent=err.orig;
+    cell.appendChild(n);
+    cell.insertAdjacentHTML("beforeend",`<span class="note">${err.wrong}</span>`);
+  }, revealed?150:550);
+}
+
+grid.addEventListener("click", e=>{
+  const cell=e.target.closest(".cell");
+  if(!cell || S.done || cell.classList.contains("fixed")) return;
+  const i=+cell.dataset.i;
+  const err=S.errors.find(x=>x.i===i);
+  if(err){
+    S.found.add(i);
+    fix(cell, err);
+    const idx=S.errors.indexOf(err);
+    const slot=$("#slots").children[idx];
+    slot.textContent=err.orig; slot.classList.add("on");
+    toast("正是", `「${err.wrong}」当作「${err.orig}」`, "ok");
+    Sound.bell();
+    updateRevealBtn();
+    if(S.found.size===S.errors.length) finish();
+    else if(S.found.size+S.revealed.size===S.errors.length){ S.done=true; clearInterval(S.timer); }
+  }else{
+    S.misses++;
+    $("#miss").textContent=cnNum(S.misses);
+    cell.classList.remove("miss"); void cell.offsetWidth; cell.classList.add("miss");
+    cell.insertAdjacentHTML("beforeend", X_SVG);
+    const x=cell.lastElementChild; setTimeout(()=>x.remove(),1350);
+    toast("非也", "此字无误", "no");
+    Sound.wood();
+  }
+});
+
+function finish(){
+  S.done=true; clearInterval(S.timer);
+  const used=fmt(performance.now()-S.start);
+  setTimeout(()=>{
+    $("#fTime").textContent=used;
+    $("#fMiss").textContent=cnNum(S.misses);
+    $("#fAns").innerHTML=S.errors.map(e=>`<span><s>${e.wrong}</s> → <i>${e.orig}</i></span>`).join("");
+    $("#final").classList.remove("hide");
+    requestAnimationFrame(()=>$("#final").classList.add("on"));
+    Sound.finale();
+  }, 1900);
+}
+
+// 揭晓：每按一次，揭开下一处（按卷中顺序）
+function reveal(){
+  if(S.done) return;
+  const err=S.errors.find(e=>!S.found.has(e.i) && !S.revealed.has(e.i));
+  if(!err) return;
+  S.revealed.add(err.i);
+  fix(grid.children[err.i], err, true);
+  const slot=$("#slots").children[S.errors.indexOf(err)];
+  slot.textContent=err.orig; slot.classList.add("rev");
+  toast("揭晓", `「${err.wrong}」当作「${err.orig}」`, "ok");
+  Sound.bell();
+  updateRevealBtn();
+  if(S.found.size+S.revealed.size===S.errors.length){ S.done=true; clearInterval(S.timer); }
+}
+function updateRevealBtn(){
+  const b=$("#btnReveal");
+  const total=S.errors.length, n=S.revealed.size, left=total-S.found.size-n;
+  b.disabled = left===0;
+  b.textContent = n===0 ? "揭晓答案" : (left ? `揭晓下一处` : "已全部揭晓");
+}
+
+/* ---------- 声音（WebAudio 合成，无外部文件） ---------- */
+const Sound = (()=>{
+  let ctx=null, on=true;
+  const ac=()=> ctx ||= new (window.AudioContext||window.webkitAudioContext)();
+  function tone(f, t0, dur, gain, type="sine"){
+    const c=ac(), o=c.createOscillator(), g=c.createGain();
+    o.type=type; o.frequency.value=f;
+    g.gain.setValueAtTime(0.0001,t0);
+    g.gain.exponentialRampToValueAtTime(gain,t0+0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+    o.connect(g).connect(c.destination); o.start(t0); o.stop(t0+dur+0.05);
+  }
+  function bellAt(f,t){ // 编钟：非谐泛音
+    tone(f,t,2.2,.22); tone(f*2.76,t,1.1,.07); tone(f*5.4,t,.5,.03); tone(f*0.5,t,1.6,.06);
+  }
+  return {
+    unlock(){ ac().resume(); },
+    toggle(){ on=!on; return on; },
+    bell(){ if(!on) return; const t=ac().currentTime; bellAt(659,t); bellAt(988,t+.12); },
+    wood(){ if(!on) return; const c=ac(), t=c.currentTime;
+      tone(190,t,.18,.35,"triangle"); tone(420,t,.06,.12,"square");
+      const n=c.createBufferSource(), b=c.createBuffer(1,c.sampleRate*.05,c.sampleRate), d=b.getChannelData(0);
+      for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length);
+      const bp=c.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=900; bp.Q.value=3;
+      const g=c.createGain(); g.gain.value=.4; n.buffer=b; n.connect(bp).connect(g).connect(c.destination); n.start(t);
+    },
+    finale(){ if(!on) return; const t=ac().currentTime;
+      [523,587,659,784,880,1047].forEach((f,i)=>bellAt(f,t+i*.16)); bellAt(523,t+1.1); bellAt(784,t+1.1);
+    }
+  };
+})();
+
+/* ---------- 绑定 ---------- */
+$("#btnAgain").onclick=()=>newRound(true);
+$("#btnNew").onclick=()=>newRound(true);
+$("#btnReveal").onclick=()=>reveal();
+// 浏览器要求用户交互后才能出声：首次点击即解锁
+document.addEventListener("pointerdown",()=>Sound.unlock(),{once:true});
+document.addEventListener("keydown",()=>Sound.unlock(),{once:true});
+$("#btnSound").onclick=e=>{ e.target.textContent = Sound.toggle() ? "声 · 开" : "声 · 关"; };
+document.addEventListener("keydown",e=>{
+  const k=e.key.toLowerCase();
+  if(k==="n") newRound(true);
+  if(k==="r") reveal();
+  if(k==="m") $("#btnSound").click();
+});
+newRound(true);
+</script>
+</body>
+</html>
