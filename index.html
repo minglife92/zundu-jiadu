@@ -1,13 +1,10 @@
-<!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>尊嘟假嘟</title>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0}</style></head><body>
+<title>千字文寻讹</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600;900&display=swap" rel="stylesheet">
 <style>
+/* 布局：夜幕下展开一幅朱丝栏手卷。行数由脚本按屏幕和字数挑选，尽量排满整列。 */
 :root{
   --ink:#1d1a17;
   --ink-soft:#4a423a;
@@ -18,7 +15,8 @@
   --gold:#c9a96a;
   --gold-deep:#8f7240;
   --bg:#120f0d;
-  --cell:min(5.7vh, 4.6vw);
+  --cell:48px;
+  --rows:10;
   --kai:"Ma Shan Zheng","KaiTi","STKaiti","楷体",serif;
   --song:"Noto Serif SC","Songti SC","SimSun",serif;
 }
@@ -26,15 +24,15 @@
 html,body{height:100%}
 body{
   background:
-    radial-gradient(ellipse 80% 70% at 50% 42%, #2b241e 0%, #17130f 55%, #0b0907 100%);
+    radial-gradient(ellipse 80% 70% at 50% 42%, #2b241e 0%, #17130f 55%, #0b0907 100%), var(--bg);
   color:var(--paper);
   font-family:var(--song);
   overflow:hidden;
   -webkit-font-smoothing:antialiased;
   user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
-  touch-action:manipulation; /* 去掉双击缩放、点击延迟 */
+  touch-action:manipulation;
 }
-body::before{ /* 暗纹 */
+body::before{
   content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .8  0 0 0 0 .7  0 0 0 0 .5  0 0 0 .06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
@@ -42,35 +40,21 @@ body::before{ /* 暗纹 */
 /* ---------- 顶栏 ---------- */
 .topbar{
   position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;
-  padding:18px 28px;z-index:5;
+  padding:calc(18px + env(safe-area-inset-top,0px)) 28px 18px;z-index:5;
 }
 .brand{font-family:var(--song);letter-spacing:.5em;font-size:13px;color:var(--gold);opacity:.75}
 .brand b{font-weight:600;color:#e6cf9c}
-.tools{display:flex;gap:10px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 .btn{
   font-family:var(--song);font-size:13px;letter-spacing:.35em;padding:7px 10px 7px 16px;
   background:transparent;color:var(--gold);border:1px solid rgba(201,169,106,.45);
   cursor:pointer;transition:.25s;
 }
 .btn:hover{background:rgba(201,169,106,.12);color:#f0dcae;border-color:var(--gold)}
-
-/* ---------- 舞台 ---------- */
-.stage{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--cell)*.45)}
-
-/* 节目标题 */
-.show-title{display:flex;align-items:center;gap:22px;margin-bottom:calc(var(--cell)*.15)}
-.show-title h2{
-  font-family:var(--kai);font-weight:400;font-size:calc(var(--cell)*1.05);letter-spacing:.32em;padding-left:.32em;line-height:1;
-  background:linear-gradient(180deg,#f6e4b4 0%,#d6b170 50%,#a8854a 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 3px 12px rgba(0,0,0,.5));
-}
-.show-title .orn{width:calc(var(--cell)*2.2);height:1px;background:linear-gradient(90deg,transparent,var(--gold));position:relative}
-.show-title .orn.r{transform:scaleX(-1)}
-.show-title .orn::after{content:"";position:absolute;right:-4px;top:-3.5px;width:7px;height:7px;background:var(--gold);transform:rotate(45deg)}
-.intro-show{margin-bottom:44px}
-.intro-show h2{font-size:min(7vh,56px)}
-.slot.rev{background:var(--gold-deep);border-color:var(--gold-deep);color:#f6e7d6;filter:url(#rough);animation:stamp .45s cubic-bezier(.2,1.6,.4,1)}
+.btn:focus-visible,.cta:focus-visible,.srcline:focus-visible,.pc:focus-visible{outline:2px solid #e8c98a;outline-offset:3px}
 .btn:disabled{opacity:.35;cursor:default;background:transparent}
+.btn.icon{display:grid;place-items:center;width:30px;padding:0;letter-spacing:0;opacity:.6}
+.btn.icon:hover,.btn.icon:focus-visible{opacity:1}
 #btnReveal{
   font-family:var(--kai);font-size:20px;letter-spacing:.3em;padding:9px 14px 9px 22px;
   color:#fbeedd;background:linear-gradient(180deg,#c2342a,#931f16);
@@ -81,6 +65,20 @@ body::before{ /* 暗纹 */
 #btnReveal:disabled{animation:none;background:rgba(168,38,27,.25);box-shadow:none;border-color:rgba(224,184,117,.3);opacity:.6}
 @keyframes pulse{50%{box-shadow:0 0 0 6px rgba(168,38,27,.12), 0 6px 26px rgba(194,52,42,.7)}}
 
+/* ---------- 舞台 ---------- */
+.stage{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--cell)*.4)}
+
+.show-title{display:flex;align-items:center;gap:22px;margin-bottom:calc(var(--cell)*.1)}
+.show-title h2{
+  font-family:var(--kai);font-weight:400;font-size:calc(var(--cell)*1.05);letter-spacing:.32em;padding-left:.32em;line-height:1;
+  background:linear-gradient(180deg,#f6e4b4 0%,#d6b170 50%,#a8854a 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 3px 12px rgba(0,0,0,.5));
+}
+.show-title .orn{width:calc(var(--cell)*2.2);height:1px;background:linear-gradient(90deg,transparent,var(--gold));position:relative}
+.show-title .orn.r{transform:scaleX(-1)}
+.show-title .orn::after{content:"";position:absolute;right:-4px;top:-3.5px;width:7px;height:7px;background:var(--gold);transform:rotate(45deg)}
+.slot.rev{background:var(--gold-deep);border-color:var(--gold-deep);color:#f6e7d6;filter:url(#rough);animation:stamp .45s cubic-bezier(.2,1.6,.4,1)}
+
 /* 手卷 */
 .scroll{position:relative;padding:0 calc(var(--cell)*.32)}
 .rod{
@@ -88,7 +86,7 @@ body::before{ /* 暗纹 */
   background:linear-gradient(90deg,#2a1a10,#5b3a22 35%,#7a5132 50%,#4a2e1a 70%,#1e130b);
   border-radius:4px;z-index:3;box-shadow:0 10px 30px rgba(0,0,0,.6);
 }
-.rod::before,.rod::after{ /* 金色轴头 */
+.rod::before,.rod::after{
   content:"";position:absolute;left:-18%;right:-18%;height:calc(var(--cell)*.32);
   background:linear-gradient(90deg,#6d5528,#e8cf8e 45%,#b8954f 60%,#5d4520);
   border-radius:3px;
@@ -108,13 +106,12 @@ body::before{ /* 暗纹 */
   color:var(--ink);
   box-shadow:0 30px 80px rgba(0,0,0,.55), inset 0 0 calc(var(--cell)*1.2) rgba(120,90,40,.22);
 }
-.paper::before{ /* 金线双框 */
+.paper::before{
   content:"";position:absolute;inset:calc(var(--cell)*.22);
   border:1px solid rgba(143,114,64,.55);
   outline:1px solid rgba(143,114,64,.3);outline-offset:4px;pointer-events:none;
 }
 
-/* 题签列 */
 .title-col{
   writing-mode:vertical-rl;display:flex;align-items:center;gap:calc(var(--cell)*.3);
   padding-left:calc(var(--cell)*.2);
@@ -122,9 +119,8 @@ body::before{ /* 暗纹 */
 .title-col h1{
   font-family:var(--kai);font-weight:400;font-size:calc(var(--cell)*1.05);letter-spacing:.18em;color:var(--ink);
 }
-.title-col .by{font-family:var(--song);font-size:calc(var(--cell)*.24);letter-spacing:.5em;color:var(--ink-soft);opacity:.8}
+.title-col .by{font-family:var(--song);font-size:calc(var(--cell)*.26);letter-spacing:.5em;color:var(--ink-soft);opacity:.85}
 
-/* 跋列 */
 .side-col{
   writing-mode:vertical-rl;display:flex;justify-content:space-between;align-items:center;
 }
@@ -140,7 +136,7 @@ body::before{ /* 暗纹 */
 /* 正文格（朱丝栏） */
 .grid{
   display:grid;direction:rtl;grid-auto-flow:column;
-  grid-template-rows:repeat(10,var(--cell));grid-auto-columns:var(--cell);
+  grid-template-rows:repeat(var(--rows),var(--cell));grid-auto-columns:var(--cell);
   border-top:2px solid var(--zhu-soft);border-bottom:2px solid var(--zhu-soft);
   border-right:1px solid var(--zhu-soft);
 }
@@ -159,7 +155,6 @@ body::before{ /* 暗纹 */
 .cell .ch{grid-area:1/1;display:block;transform:translateY(.02em);text-shadow:0 0 .5px rgba(0,0,0,.5)}
 @keyframes inkIn{from{opacity:0;filter:blur(6px);transform:scale(1.12)}to{opacity:1;filter:blur(0);transform:none}}
 
-/* 点错 */
 .cell.miss{animation:shake .45s cubic-bezier(.36,.07,.19,.97) both;opacity:1}
 @keyframes shake{
   10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(3px)}
@@ -173,7 +168,6 @@ body::before{ /* 暗纹 */
 @keyframes fadeX{0%,55%{opacity:1}100%{opacity:0}}
 @keyframes draw{to{stroke-dashoffset:0}}
 
-/* 点中 */
 .cell.fixed{cursor:default}
 .cell.fixed:hover{background:transparent}
 .mark.o path{stroke:var(--zhu);stroke-width:4.2;stroke-dasharray:1;stroke-dashoffset:1;animation:draw .65s cubic-bezier(.6,.1,.3,1) forwards;opacity:.9}
@@ -192,25 +186,34 @@ body::before{ /* 暗纹 */
   from{-webkit-mask-position:0 100%;mask-position:0 100%;filter:blur(2px)}
   to{-webkit-mask-position:0 0;mask-position:0 0;filter:blur(0)}
 }
-.note{ /* 小字批注：原误字 */
-  position:absolute;left:4%;bottom:3%;font-family:var(--kai);font-size:calc(var(--cell)*.24);
+.note{
+  position:absolute;left:4%;bottom:3%;font-family:var(--kai);font-size:calc(var(--cell)*.26);
   color:var(--ink-soft);opacity:0;text-decoration:line-through;text-decoration-color:var(--zhu);
   animation:noteIn .5s ease-out 1.1s forwards;
 }
 @keyframes noteIn{to{opacity:.75}}
 
 /* ---------- 底部信息 ---------- */
-.hud{display:flex;align-items:center;gap:calc(var(--cell)*.9);font-size:14px;letter-spacing:.4em;color:rgba(242,232,211,.7)}
+.hud{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px calc(var(--cell)*.9);font-size:14px;letter-spacing:.4em;color:rgba(242,232,211,.7);max-width:100vw;padding:0 12px}
 .hud .label{font-size:12px;color:var(--gold);opacity:.8;margin-right:.6em}
 .hud .val{font-family:var(--kai);font-size:22px;letter-spacing:.12em;color:#efe2c4}
-.slots{display:flex;gap:10px}
+.hud > div{display:flex;align-items:center}
+.slots{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 .slot{
   width:34px;height:34px;border:1px solid rgba(201,169,106,.5);display:grid;place-items:center;
   font-family:var(--kai);font-size:22px;color:transparent;transition:.5s;
 }
+.slots[data-many="1"]{gap:6px}
+.slots[data-many="1"] .slot{width:24px;height:24px;font-size:15px}
 .slot.on{background:var(--zhu);border-color:var(--zhu);color:#f6e7d6;filter:url(#rough);animation:stamp .45s cubic-bezier(.2,1.6,.4,1)}
 @keyframes stamp{from{transform:scale(1.8) rotate(-12deg);opacity:0}to{transform:none;opacity:1}}
 .divider{width:1px;height:22px;background:rgba(201,169,106,.3)}
+
+.srcline{
+  font-family:var(--song);font-size:12px;letter-spacing:.28em;color:rgba(201,169,106,.7);
+  background:none;border:0;border-bottom:1px solid rgba(201,169,106,.3);padding:2px 2px 4px;cursor:pointer;text-align:center;max-width:92vw;
+}
+.srcline:hover{color:#f0dcae;border-color:var(--gold)}
 
 /* ---------- 提示语 ---------- */
 .toast{
@@ -239,41 +242,107 @@ body::before{ /* 暗纹 */
   100%{opacity:0;transform:translate(-50%,-56%) scale(.98);filter:blur(4px)}
 }
 
-/* ---------- 开场 / 终局 ---------- */
+/* ---------- 终局 / 出处面板 ---------- */
 .overlay{
   position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:16px;
   background:radial-gradient(ellipse at 50% 45%, rgba(40,32,26,.92), rgba(8,6,5,.97));
   transition:opacity .9s ease, visibility .9s;
 }
 .overlay.hide{opacity:0;visibility:hidden}
-.intro-title{display:flex;flex-direction:row-reverse;align-items:flex-start;gap:28px}
-.intro-title .big{writing-mode:vertical-rl;font-family:var(--kai);font-size:min(14vh,110px);letter-spacing:.12em;color:#efe2c4;line-height:1.1}
-.intro-title .sub{writing-mode:vertical-rl;font-family:var(--song);font-size:15px;letter-spacing:.7em;color:var(--gold);margin-top:18px}
-.intro-title .seal{width:54px;height:54px;font-size:19px;margin-top:auto}
-.intro-rule{margin:38px 0 30px;font-size:14px;letter-spacing:.42em;color:rgba(242,232,211,.6);text-align:center;line-height:2.2}
-.intro-rule em{font-style:normal;color:#e8c98a}
 .cta{
   font-family:var(--kai);font-size:26px;letter-spacing:.6em;padding:12px 26px 12px 42px;
   color:#f6e7d6;background:transparent;border:1px solid var(--gold);cursor:pointer;position:relative;transition:.3s;
 }
 .cta::before{content:"";position:absolute;inset:4px;border:1px solid rgba(201,169,106,.35);pointer-events:none}
 .cta:hover{background:rgba(168,38,27,.85);border-color:var(--zhu);letter-spacing:.7em}
-.hint{position:fixed;bottom:16px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.3em;color:rgba(201,169,106,.35)}
+.hint{position:fixed;bottom:12px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.3em;color:rgba(201,169,106,.35);pointer-events:none}
 
 .final .stampbig{
-  width:min(26vh,190px);height:min(26vh,190px);background:var(--zhu);color:#f6e7d6;filter:url(#rough);
-  display:grid;grid-template-columns:1fr 1fr;place-items:center;font-family:var(--kai);font-size:min(9vh,68px);line-height:1;
+  width:min(22vh,170px);height:min(22vh,170px);background:var(--zhu);color:#f6e7d6;filter:url(#rough);
+  display:grid;grid-template-columns:1fr 1fr;place-items:center;font-family:var(--kai);font-size:min(8vh,60px);line-height:1;
   padding:12px;border-radius:6px;box-shadow:inset 0 0 0 4px rgba(246,231,214,.9), inset 0 0 0 8px var(--zhu);
   transform:scale(2.2) rotate(-14deg);opacity:0;
 }
 .final.on .stampbig{animation:bigStamp .6s cubic-bezier(.2,1.5,.35,1) .25s forwards}
 @keyframes bigStamp{to{transform:rotate(-4deg);opacity:1}}
-.final h2{margin-top:36px;font-family:var(--kai);font-weight:400;font-size:min(7vh,52px);letter-spacing:.3em;color:#efe2c4}
-.final .stats{margin:18px 0 34px;display:flex;gap:40px;font-size:14px;letter-spacing:.4em;color:rgba(242,232,211,.65)}
+.final h2{margin-top:28px;font-family:var(--kai);font-weight:400;font-size:min(7vh,52px);letter-spacing:.3em;color:#efe2c4}
+.final .stats{margin:14px 0 22px;display:flex;gap:40px;font-size:14px;letter-spacing:.4em;color:rgba(242,232,211,.65)}
 .final .stats b{font-family:var(--kai);font-weight:400;font-size:26px;color:#e8c98a;margin-left:.4em;letter-spacing:.1em}
-.final .answers{display:flex;gap:26px;margin-bottom:30px;font-family:var(--kai);font-size:22px;color:rgba(242,232,211,.85);letter-spacing:.15em}
+.final .answers{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 26px;margin-bottom:18px;font-family:var(--kai);font-size:22px;color:rgba(242,232,211,.85);letter-spacing:.15em;max-width:min(92vw,720px)}
 .final .answers s{color:rgba(242,232,211,.45);text-decoration-color:var(--zhu)}
 .final .answers i{font-style:normal;color:#e06a55}
+.final .notes{width:min(92vw,620px);max-height:24vh;overflow:auto;margin-bottom:20px;font-size:13px;line-height:1.9;letter-spacing:.06em;color:rgba(242,232,211,.7)}
+.final .notes p{display:flex;gap:.8em}
+.final .notes b{flex:none;font-family:var(--kai);font-weight:400;font-size:17px;color:#e8c98a}
+.final .fsrc{margin-bottom:22px;font-size:12px;letter-spacing:.3em;color:rgba(201,169,106,.65);text-align:center}
+
+.info{z-index:40;background:rgba(8,6,5,.92)}
+.panel{
+  width:min(100%,580px);max-height:calc(100% - 8px);overflow:auto;padding:30px 32px 26px;
+  background:rgba(24,19,15,.96);border:1px solid rgba(201,169,106,.5);outline:1px solid rgba(201,169,106,.22);outline-offset:5px;
+}
+.panel h3{font-family:var(--kai);font-weight:400;font-size:38px;letter-spacing:.22em;color:#efe2c4;line-height:1.2}
+.panel .sub{margin:6px 0 20px;font-size:13px;letter-spacing:.35em;color:var(--gold)}
+.info dl{display:grid;grid-template-columns:4.2em minmax(0,1fr);gap:12px 16px;font-size:14px;line-height:1.9;letter-spacing:.04em}
+.info dt{color:var(--gold);font-size:13px;letter-spacing:.3em;padding-top:1px}
+.info dd{color:rgba(242,232,211,.88);grid-column:2}
+.info dt:empty{display:none}
+.info dt:empty + dd{grid-column:1 / -1}
+.close{margin-top:24px;display:flex;justify-content:center}
+.close .cta{font-size:20px;padding:9px 18px 9px 30px}
+
+/* ---------- 后台 ---------- */
+.admin{z-index:50;background:rgba(8,6,5,.94)}
+.admin .panel{width:min(100%,860px);padding:26px 28px 22px}
+.admin .panel h3{font-size:32px}
+.admin, .admin *{-webkit-user-select:text;user-select:text}
+.admin button{-webkit-user-select:none;user-select:none}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px 18px;margin-bottom:16px}
+.admin label{display:flex;flex-direction:column;gap:6px;font-size:12px;letter-spacing:.3em;color:var(--gold)}
+.admin label.block{margin-bottom:6px}
+.admin input,.admin textarea{
+  font-family:var(--song);font-size:15px;letter-spacing:.06em;color:#f2e8d3;background:rgba(242,232,211,.06);
+  border:1px solid rgba(201,169,106,.4);padding:8px 10px;width:100%;min-width:0;line-height:1.7;
+}
+.admin textarea{resize:vertical}
+.admin input:focus-visible,.admin textarea:focus-visible{outline:2px solid #e8c98a;outline-offset:1px}
+.admin .count{font-size:12px;letter-spacing:.2em;color:rgba(242,232,211,.55);margin:2px 0 14px}
+.admin .sec{margin:6px 0 10px;font-size:13px;letter-spacing:.3em;color:var(--gold);display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline}
+.admin .sec small{font-size:12px;letter-spacing:.1em;color:rgba(242,232,211,.55)}
+.pick{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(36px,1fr));gap:3px;
+  max-height:240px;overflow:auto;padding:8px;background:rgba(242,232,211,.05);border:1px solid rgba(201,169,106,.25);
+}
+.pc{
+  position:relative;aspect-ratio:1;min-width:0;font-family:var(--kai);font-size:22px;line-height:1;
+  color:#f2e8d3;background:transparent;border:1px solid rgba(201,169,106,.18);cursor:pointer;
+}
+.pc:hover{background:rgba(201,169,106,.18)}
+.pc.sel{background:var(--zhu);border-color:var(--zhu);color:#fbeedd}
+.pc.cur{outline:2px solid #e8c98a;outline-offset:1px}
+.pc sup{position:absolute;right:2px;top:1px;font-size:12px;line-height:1;color:#ffd9c9}
+.editor{margin:12px 0 4px;padding:12px;border:1px dashed rgba(201,169,106,.5);display:grid;grid-template-columns:auto minmax(0,90px) minmax(0,1fr);gap:10px 12px;align-items:center}
+.editor .who{font-family:var(--kai);font-size:20px;color:#efe2c4;letter-spacing:.1em}
+.editor .row{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:8px}
+.errlist{list-style:none;margin:12px 0;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.errlist li{display:flex;gap:12px;align-items:baseline;padding:6px 10px;background:rgba(242,232,211,.05);border-left:3px solid var(--zhu)}
+.errlist .pos{flex:none;color:rgba(242,232,211,.5);font-size:12px;letter-spacing:.1em;min-width:4.5em}
+.errlist .chg{flex:none;font-family:var(--kai);font-size:19px;color:#efe2c4}
+.errlist .chg i{font-style:normal;color:#e06a55}
+.errlist .nt{flex:1;min-width:0;color:rgba(242,232,211,.65);font-size:13px}
+.errlist button{flex:none}
+.errlist .none{border-left-color:rgba(201,169,106,.3);color:rgba(242,232,211,.5)}
+.rand{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-bottom:16px;font-size:13px;letter-spacing:.15em;color:rgba(242,232,211,.7)}
+.rand input{width:64px}
+.mini{font-family:var(--song);font-size:13px;letter-spacing:.2em;padding:6px 12px;color:var(--gold);background:transparent;border:1px solid rgba(201,169,106,.45);cursor:pointer}
+.mini:hover{background:rgba(201,169,106,.14);color:#f0dcae}
+.mini.primary{color:#fbeedd;background:linear-gradient(180deg,#c2342a,#931f16);border-color:#e0b875}
+.mini:disabled{opacity:.45;cursor:default}
+.mini:focus-visible{outline:2px solid #e8c98a;outline-offset:2px}
+.status{min-height:1.8em;margin:4px 0 12px;font-size:13px;letter-spacing:.1em;color:#e8c98a}
+.status.bad{color:#f08a76}
+.actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
 
 /* 开卷动画 */
 .scroll.unroll .paper{animation:unroll 1.4s cubic-bezier(.65,0,.25,1) both}
@@ -282,28 +351,45 @@ body::before{ /* 暗纹 */
 @keyframes unroll{from{clip-path:inset(0 50% 0 50%)}to{clip-path:inset(0 0 0 0)}}
 @keyframes rodL{from{left:calc(50% - var(--cell)*.4)}to{left:0}}
 @keyframes rodR{from{right:calc(50% - var(--cell)*.4)}to{right:0}}
+.scroll.closed .paper{clip-path:inset(0 50% 0 50%)}
+.scroll.closed .rod-l{left:calc(50% - var(--cell)*.4)}
+.scroll.closed .rod-r{right:calc(50% - var(--cell)*.4)}
+
+@media (prefers-reduced-motion:reduce){
+  .cell{animation-duration:.01s;animation-delay:0s!important}
+  #btnReveal{animation:none}
+  .scroll.unroll .paper,.scroll.unroll .rod-l,.scroll.unroll .rod-r{animation-duration:.01s}
+}
+
 /* ---------- 手机：竖屏 ---------- */
 @media (max-width:700px) and (orientation:portrait){
-  :root{--cell:min(8.4vw, 5.6vh)}
   .side-col,.title-col,.hint,.brand{display:none}
-  .topbar{padding:12px;justify-content:center}
-  .btn{font-size:13px;padding:9px 8px 9px 14px;letter-spacing:.25em}
-  #btnReveal{font-size:16px;padding:8px 10px 8px 16px}
+  .stage{padding-top:calc(58px + env(safe-area-inset-top,0px))}
+  .srcline{font-size:11px;letter-spacing:.08em}
+  .topbar{padding:calc(12px + env(safe-area-inset-top,0px)) 12px 12px;justify-content:center}
+  .tools{gap:8px;justify-content:center}
+  .btn{font-size:13px;padding:9px 6px 9px 12px;letter-spacing:.22em}
+  #btnReveal{font-size:16px;padding:8px 8px 8px 14px}
   .paper{padding:calc(var(--cell)*.55) calc(var(--cell)*.5)}
   .paper::before{inset:calc(var(--cell)*.18)}
+  .show-title h2{font-size:calc(var(--cell)*1.1)}
   .show-title .orn{width:calc(var(--cell)*1.4)}
-  .hud{gap:14px;font-size:13px;letter-spacing:.2em}
+  .hud{gap:8px 14px;font-size:13px;letter-spacing:.2em}
   .hud .label{font-size:11px}
   .hud .val{font-size:20px}
-  .slot{width:30px;height:30px;font-size:19px}
-  .slots{gap:6px}
+  .slot{width:26px;height:26px;font-size:16px}
+  .slots{gap:5px}
   .toast .w{font-size:calc(var(--cell)*2.6)}
   .final .stats{gap:22px}
-  .final .answers{gap:16px;font-size:19px}
+  .final .answers{gap:10px 16px;font-size:19px}
+  .panel{padding:24px 20px 20px}
+  .panel h3{font-size:30px}
+  .admin .panel{padding:20px 16px 16px}
+  .editor{grid-template-columns:auto minmax(0,1fr)}
+  .editor input#eNote{grid-column:1 / -1}
 }
 /* ---------- 手机：横屏 ---------- */
 @media (max-height:500px) and (orientation:landscape){
-  :root{--cell:min(6.6vh, 5vw)}
   .hint,.brand{display:none}
   .topbar{padding:10px 12px;justify-content:flex-end;align-items:flex-start}
   .tools{flex-direction:column;gap:8px}
@@ -314,14 +400,9 @@ body::before{ /* 暗纹 */
   .hud{font-size:12px}
   .hud .val{font-size:17px}
   .slot{width:26px;height:26px;font-size:17px}
+  .final .notes,.final .fsrc{display:none}
 }
-
-.scroll.closed .paper{clip-path:inset(0 50% 0 50%)}
-.scroll.closed .rod-l{left:calc(50% - var(--cell)*.4)}
-.scroll.closed .rod-r{right:calc(50% - var(--cell)*.4)}
 </style>
-</head>
-<body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <filter id="brush"><feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="2" seed="3" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="4"/></filter>
@@ -333,24 +414,26 @@ body::before{ /* 暗纹 */
   <div class="tools">
     <button class="btn" id="btnReveal" title="快捷键 R">揭晓答案</button>
     <button class="btn" id="btnNew" title="快捷键 N">重来</button>
+    <button class="btn" id="btnInfo" title="快捷键 I">出处</button>
     <button class="btn" id="btnSound" title="快捷键 M">声 · 开</button>
+    <button class="btn icon" id="btnAdmin" aria-label="后台" title="后台"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></svg></button>
   </div>
 </header>
 
 <main class="stage">
-  <div class="show-title"><span class="orn"></span><h2>尊嘟假嘟</h2><span class="orn r"></span></div>
+  <div class="show-title"><span class="orn"></span><h2 id="gameTitle">尊嘟假嘟</h2><span class="orn r"></span></div>
   <div class="scroll closed" id="scroll">
     <div class="rod rod-l"></div>
     <div class="rod rod-r"></div>
     <div class="paper">
       <div class="side-col">
-        <p>千字之中藏三讹　慧眼者识之</p>
+        <p id="sideTxt"></p>
         <div class="seal"><span>假</span><span>尊</span><span>嘟</span><span>嘟</span></div>
       </div>
       <div class="grid" id="grid"></div>
       <div class="title-col">
-        <h1>千字文</h1>
-        <span class="by">梁 · 周兴嗣 次韵</span>
+        <h1 id="bookH1">千字文</h1>
+        <span class="by" id="authorBy"></span>
       </div>
     </div>
   </div>
@@ -362,55 +445,205 @@ body::before{ /* 暗纹 */
     <div class="divider"></div>
     <div><span class="label">误点</span><span class="val" id="miss">〇</span></div>
   </div>
+  <button class="srcline" id="btnSrc"></button>
 </main>
 
 <div class="toast" id="toast"><div class="w"></div><div class="s"></div></div>
 
-
 <section class="overlay final hide" id="final">
   <div class="stampbig"><span>圆</span><span>功</span><span>满</span><span>德</span></div>
-  <h2>三讹尽勘</h2>
+  <h2 id="finalH">尽勘</h2>
   <div class="stats"><span>用时<b id="fTime">00:00</b></span><span>误点<b id="fMiss">〇</b></span></div>
   <div class="answers" id="fAns"></div>
+  <div class="notes" id="fNotes"></div>
+  <p class="fsrc" id="fSrc"></p>
   <button class="cta" id="btnAgain">再来</button>
 </section>
 
-<div class="hint">快捷键 · R 揭晓下一处 · N 重来 · M 声音</div>
+<section class="overlay info hide" id="info" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+  <div class="panel">
+    <h3 id="infoTitle">千字文</h3>
+    <p class="sub" id="infoSub"></p>
+    <dl id="infoDl"></dl>
+    <div class="close"><button class="cta" id="btnInfoClose">合卷</button></div>
+  </div>
+</section>
+
+<section class="overlay admin hide" id="admin" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+  <div class="panel">
+    <h3 id="adminTitle">后台 · 出题</h3>
+    <p class="sub">设好原文和错字，保存后这一题就是大家打开看到的</p>
+    <div class="fields">
+      <label for="aTitle">游戏标题<input id="aTitle" maxlength="12" autocomplete="off"></label>
+      <label for="aBook">书名<input id="aBook" maxlength="16" autocomplete="off"></label>
+      <label for="aAuthor">作者<input id="aAuthor" maxlength="24" autocomplete="off"></label>
+      <label for="aSel">选录说明<input id="aSel" maxlength="24" autocomplete="off"></label>
+    </div>
+    <label class="block" for="aText">原文（问题）<textarea id="aText" rows="4" spellcheck="false"></textarea></label>
+    <div class="count" id="aCount"></div>
+    <div class="sec">错字<span id="aErrCount"></span><small>点下面的字，改成你要的讹字</small></div>
+    <div class="pick" id="aPick"></div>
+    <div class="editor" id="aEditor" hidden>
+      <span class="who" id="eWho"></span>
+      <input id="eWrong" maxlength="2" placeholder="讹字" aria-label="讹字" autocomplete="off">
+      <input id="eNote" placeholder="注解（选填，通关后显示）" aria-label="注解" autocomplete="off">
+      <div class="row">
+        <button class="mini primary" id="eOk">确定</button>
+        <button class="mini" id="eDel">移除这处</button>
+        <button class="mini" id="eCancel">取消</button>
+      </div>
+    </div>
+    <ul class="errlist" id="aList"></ul>
+    <div class="rand">
+      <span>随机出</span><input id="aRandN" type="number" min="1" max="60" value="5" aria-label="随机错字数量"><span>处</span>
+      <button class="mini" id="aRand">随机生成</button>
+      <button class="mini" id="aClear">清空错字</button>
+    </div>
+    <label class="block" for="aInfo">出处面板内容（每行写「项目：内容」）<textarea id="aInfo" rows="6" spellcheck="false"></textarea></label>
+    <div class="status" id="aStatus" role="status"></div>
+    <div class="actions">
+      <button class="mini" id="aReset">恢复默认题</button>
+      <button class="mini" id="aTry">试玩</button>
+      <button class="mini primary" id="aSave">保存并启用</button>
+      <button class="mini" id="aClose">关闭</button>
+    </div>
+  </div>
+</section>
+
+<div class="hint">快捷键 · R 揭晓下一处 · N 重来 · I 出处 · M 声音</div>
 
 <script>
-const TEXT = "天地玄黄宇宙洪荒日月盈昃辰宿列张寒来暑往秋收冬藏闰余成岁律吕调阳云腾致雨露结为霜金生丽水玉出昆冈剑号巨阙珠称夜光果珍李柰菜重芥姜海咸河淡鳞潜羽翔龙师火帝鸟官人皇始制文字乃服衣裳推位让国有虞陶唐吊民伐罪";
-
-// 固定答案：[正字, 误字] —— 改这里即可换题
-const ANSWERS = [ ["昃","仄"], ["阙","缺"], ["潜","浅"] ];
-const CN = ["〇","一","二","三","四","五","六","七","八","九","十"];
+/* ---------- 默认题：《千字文》开篇二百字（前五十句，至“诗赞羔羊”） ---------- */
+const DEF_TEXT = "天地玄黄宇宙洪荒日月盈昃辰宿列张寒来暑往秋收冬藏闰余成岁律吕调阳云腾致雨露结为霜金生丽水玉出昆冈剑号巨阙珠称夜光果珍李柰菜重芥姜海咸河淡鳞潜羽翔龙师火帝鸟官人皇始制文字乃服衣裳推位让国有虞陶唐吊民伐罪周发殷汤坐朝问道垂拱平章爱育黎首臣伏戎羌遐迩壹体率宾归王鸣凤在竹白驹食场化被草木赖及万方盖此身发四大五常恭惟鞠养岂敢毁伤女慕贞洁男效才良知过必改得能莫忘罔谈彼短靡恃己长信使可覆器欲难量墨悲丝染诗赞羔羊";
+const DEF_ERR = [
+  ["昃","昊","日偏西。“日月盈昃”写日有偏西、月有盈亏。“昊”形近，指广大的天。"],
+  ["阙","缺","“巨阙”，相传为越王勾践所铸名剑。"],
+  ["潜","浅","鱼在水中潜游，与“羽翔”对举。"],
+  ["戎","戒","“戎羌”，泛指西部的少数民族。"],
+  ["恃","持","恃，依仗。“靡恃己长”是不要仗着自己的长处。"]
+];
+const DEFAULT = {
+  title:"尊嘟假嘟", book:"千字文", author:"梁 · 周兴嗣 次韵", sel:"选录前二百字",
+  text:DEF_TEXT,
+  errors:DEF_ERR.map(([o,w,n])=>({i:DEF_TEXT.indexOf(o),wrong:w,note:n})),
+  info:[
+    "作者：周兴嗣，南朝梁文人，奉梁武帝之命编撰。",
+    "成书：约公元六世纪初，南朝梁。",
+    "体例：四言韵文，共二百五十句、一千字，号称一字不重复。",
+    "传说：梁武帝命人从王羲之遗墨中拓出一千个不重复的字，字字零散无序，交周兴嗣排成有韵文章。相传他一夜编成，须发尽白。",
+    "用途：旧时的蒙学识字课本，教孩童认字，也讲天文、历史与修身。后世也借其字序作编号，如“天字第一号”。",
+    "选录：本游戏取开篇二百字，即前五十句，自“天地玄黄”至“诗赞羔羊”。依次写天地日月与四时、物产珍宝、上古帝王与三代、修身立德。",
+    "讹字：卷中五处讹字是游戏人为改动的，并非原文。字句以通行本为准，个别版本略有出入。"
+  ].join("\n")
+};
+const SIM = ["己已巳","未末","戊戌戍戎戒","日曰","土士","入人","大太犬","王玉主","木本术","干千于","刀力","天夫","午牛","贝见","清请情","晴睛","绵棉","陪赔","带戴","作做","象像","辨辩辫","形型","持恃待侍","昃昊","柰奈","浅残钱","缺块","孙孩","洪供","荒慌","宙笛","玄弦","黄横","盈孟","列别","张弛","藏臧","律津","调周","腾滕","致至","霜箱","丽illion","昆混","冈岗","珠株","称秤","李季","菜采","姜羊","咸减","淡谈","鳞磷","翔详","龙尤","帝常","鸟乌","始姑","裳常","推堆","让譲","吊吊","罚伐","汤扬","朝期","垂乘","拱洪","育有","黎犁","臣巨","伏代","羌美","迩尔","率卒","宾傧","凤风","驹拘","场扬","被披","赖濑","盖益","身耳","恭共","鞠鞘","岂启","毁燬","贞侦","洁结","效郊","良艮","莫英","罔网","彼被","短矮","覆履","器噐","量重","墨黑","丝系","染梁","诗侍","赞赠","羔羊"].filter(g=>!/[a-z]/i.test(g)&&[...g].length>=2);
+const CN_D = "〇一二三四五六七八九", CN_U = ["","十","百","千"];
 
 const $ = s => document.querySelector(s);
-const grid = $("#grid"), scroll = $("#scroll");
-let S = {};
+const grid = $("#grid"), scroll = $("#scroll"), info = $("#info"), admin = $("#admin");
+let CFG = DEFAULT, TXT = [...DEFAULT.text], S = {}, DBH = null;
 
-function cnNum(n){ if(n<=10) return CN[n]; if(n<20) return "十"+(n%10?CN[n%10]:""); return String(n); }
+function cnNumber(n){
+  if(n<10) return CN_D[n];
+  const s=String(n); let out="", zero=false;
+  for(let i=0;i<s.length;i++){
+    const x=+s[i], p=s.length-1-i;
+    if(x===0){ zero=true; continue; }
+    if(zero && out) out+="〇"; zero=false;
+    out += (x===1 && p===1 && i===0 ? "" : CN_D[x]) + CN_U[p];
+  }
+  return out;
+}
 function fmt(ms){ const t=Math.floor(ms/1000); return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0"); }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+const PUNCT = /[\s，。、；：！？,.;:!?“”"'‘’（）()《》〈〉「」『』【】…—\-·]/g;
+function normText(s){ return String(s||"").replace(PUNCT,""); }
+function str(v,d,max){ const t=String(v==null?"":v).trim(); return (t||d).slice(0,max||40); }
 
-function pickErrors(){
-  return ANSWERS.map(([o,w])=>({i:TEXT.indexOf(o),orig:o,wrong:w}))
-                .filter(x=>x.i>=0).sort((a,b)=>a.i-b.i);
+function sanitize(c){
+  c = c && typeof c==="object" ? c : {};
+  let text = normText(c.text); if(!text) text = DEFAULT.text;
+  const chars=[...text], seen=new Set(), errors=[];
+  (Array.isArray(c.errors)?c.errors:[]).forEach(e=>{
+    const i=Number(e&&e.i), w=[...String((e&&e.wrong)||"")][0];
+    if(Number.isInteger(i) && i>=0 && i<chars.length && w && w!==chars[i] && !seen.has(i)){
+      seen.add(i); errors.push({i, wrong:w, note:String((e&&e.note)||"").slice(0,200)});
+    }
+  });
+  if(!errors.length) return DEFAULT;
+  errors.sort((a,b)=>a.i-b.i);
+  return {
+    title:str(c.title,DEFAULT.title,12), book:str(c.book,DEFAULT.book,16),
+    author:str(c.author,"",24), sel:String(c.sel==null?"":c.sel).trim().slice(0,24),
+    text, errors, info:String(c.info==null?DEFAULT.info:c.info).slice(0,4000)
+  };
+}
+
+/* ---------- 排版：按屏幕与字数挑行数，尽量排满整列 ---------- */
+function fit(){
+  const n=TXT.length, W=window.innerWidth, H=window.innerHeight;
+  const portrait = W<=700 && H>W, shortLand = H<=500 && W>H;
+  const wCells = portrait?2.2:6.4, fixedW = portrait?28:(shortLand?170:44);
+  const hCells = portrait?4.2:4.6, fixedH = portrait?170:(shortLand?74:144);
+  let best=null;
+  for(let r=4;r<=40;r++){
+    const cols=Math.ceil(n/r);
+    const cell=Math.min((W-fixedW)/(cols+wCells),(H-fixedH)/(r+hCells));
+    const score=cell*(n%r===0?1:.86);
+    if(!best||score>best.score) best={r,cell,score};
+  }
+  const root=document.documentElement.style;
+  root.setProperty("--rows",best.r);
+  root.setProperty("--cell",Math.max(10,Math.min(64,best.cell)).toFixed(1)+"px");
+}
+let fitT=null;
+window.addEventListener("resize",()=>{ clearTimeout(fitT); fitT=setTimeout(fit,120); });
+
+/* ---------- 文案随题目变化 ---------- */
+function srcText(){ return "出处　《"+CFG.book+"》"+(CFG.author?" · "+CFG.author:"")+(CFG.sel?" · "+CFG.sel:""); }
+function renderInfo(){
+  $("#infoTitle").textContent=CFG.book;
+  $("#infoSub").textContent=CFG.author;
+  const dl=$("#infoDl"); dl.innerHTML="";
+  CFG.info.split("\n").map(l=>l.trim()).filter(Boolean).forEach(l=>{
+    const m=l.match(/^([^:：]{1,6})[:：]\s*(.*)$/);
+    const dt=document.createElement("dt"), dd=document.createElement("dd");
+    if(m){ dt.textContent=m[1]; dd.textContent=m[2]; } else { dd.textContent=l; }
+    dl.append(dt,dd);
+  });
+}
+function renderTexts(){
+  $("#gameTitle").textContent=CFG.title;
+  $("#bookH1").textContent=CFG.book;
+  $("#authorBy").textContent=CFG.author;
+  $("#sideTxt").textContent=cnNumber(TXT.length)+"字中藏"+cnNumber(CFG.errors.length)+"讹　慧眼者识之";
+  $("#btnSrc").textContent=srcText();
+  $("#fSrc").textContent=srcText();
+  $("#finalH").textContent=cnNumber(CFG.errors.length)+"讹尽勘";
+  renderInfo();
 }
 
 function newRound(withUnroll=true){
   clearInterval(S.timer);
-  S = { errors:pickErrors(), found:new Set(), revealed:new Set(), misses:0, start:0, timer:null, done:false };
+  S = { errors:CFG.errors.map(e=>({i:e.i,orig:TXT[e.i],wrong:e.wrong,note:e.note})),
+        found:new Set(), revealed:new Set(), misses:0, start:0, timer:null, done:false };
   updateRevealBtn();
-  const chars=[...TEXT];
+  fit();
+  const chars=[...TXT];
   S.errors.forEach(e=>chars[e.i]=e.wrong);
   grid.innerHTML="";
+  const step = Math.min(0.014, 1.4/Math.max(chars.length,1));
   chars.forEach((c,i)=>{
     const b=document.createElement("button");
     b.className="cell"; b.dataset.i=i;
-    b.style.setProperty("--d",(0.9+i*0.014)+"s");
-    b.innerHTML=`<span class="ch">${c}</span>`;
+    b.style.setProperty("--d",(0.9+i*step).toFixed(3)+"s");
+    b.setAttribute("aria-label","第"+(i+1)+"字");
+    b.innerHTML=`<span class="ch">${esc(c)}</span>`;
     grid.appendChild(b);
   });
-  $("#slots").innerHTML=S.errors.map(()=>`<span class="slot"></span>`).join("");
+  const slots=$("#slots");
+  slots.dataset.many = S.errors.length>8 ? "1" : "0";
+  slots.innerHTML=S.errors.map(()=>`<span class="slot"></span>`).join("");
   $("#miss").textContent="〇"; $("#time").textContent="00:00";
   $("#final").classList.add("hide"); $("#final").classList.remove("on");
   if(withUnroll){
@@ -420,6 +653,15 @@ function newRound(withUnroll=true){
   }
   S.start=performance.now();
   S.timer=setInterval(()=>{ $("#time").textContent=fmt(performance.now()-S.start); },250);
+}
+
+function applyConfig(cfg, unroll){
+  CFG=cfg; TXT=[...cfg.text];
+  renderTexts();
+  newRound(unroll);
+}
+function applyIfChanged(cfg){
+  if(JSON.stringify(cfg)!==JSON.stringify(CFG)) applyConfig(cfg,false);
 }
 
 function toast(word, sub, kind){
@@ -443,7 +685,9 @@ function fix(cell, err, revealed=false){
     const n=document.createElement("span");
     n.className="ch new"; n.textContent=err.orig;
     cell.appendChild(n);
-    cell.insertAdjacentHTML("beforeend",`<span class="note">${err.wrong}</span>`);
+    const note=document.createElement("span");
+    note.className="note"; note.textContent=err.wrong;
+    cell.appendChild(note);
   }, revealed?150:550);
 }
 
@@ -465,7 +709,7 @@ grid.addEventListener("click", e=>{
     else if(S.found.size+S.revealed.size===S.errors.length){ S.done=true; clearInterval(S.timer); }
   }else{
     S.misses++;
-    $("#miss").textContent=cnNum(S.misses);
+    $("#miss").textContent=cnNumber(S.misses);
     cell.classList.remove("miss"); void cell.offsetWidth; cell.classList.add("miss");
     cell.insertAdjacentHTML("beforeend", X_SVG);
     const x=cell.lastElementChild; setTimeout(()=>x.remove(),1350);
@@ -479,15 +723,17 @@ function finish(){
   const used=fmt(performance.now()-S.start);
   setTimeout(()=>{
     $("#fTime").textContent=used;
-    $("#fMiss").textContent=cnNum(S.misses);
-    $("#fAns").innerHTML=S.errors.map(e=>`<span><s>${e.wrong}</s> → <i>${e.orig}</i></span>`).join("");
+    $("#fMiss").textContent=cnNumber(S.misses);
+    $("#fAns").innerHTML=S.errors.map(e=>`<span><s>${esc(e.wrong)}</s> → <i>${esc(e.orig)}</i></span>`).join("");
+    const withNote=S.errors.filter(e=>e.note);
+    $("#fNotes").innerHTML=withNote.map(e=>`<p><b>${esc(e.orig)}</b><span>${esc(e.note)}</span></p>`).join("");
+    $("#fNotes").hidden=!withNote.length;
     $("#final").classList.remove("hide");
     requestAnimationFrame(()=>$("#final").classList.add("on"));
     Sound.finale();
   }, 1900);
 }
 
-// 揭晓：每按一次，揭开下一处（按卷中顺序）
 function reveal(){
   if(S.done) return;
   const err=S.errors.find(e=>!S.found.has(e.i) && !S.revealed.has(e.i));
@@ -508,6 +754,10 @@ function updateRevealBtn(){
   b.textContent = n===0 ? "揭晓答案" : (left ? `揭晓下一处` : "已全部揭晓");
 }
 
+function openInfo(){ info.classList.remove("hide"); $("#btnInfoClose").focus(); }
+function closeInfo(){ info.classList.add("hide"); }
+const isOpen = el => !el.classList.contains("hide");
+
 /* ---------- 声音（WebAudio 合成，无外部文件） ---------- */
 const Sound = (()=>{
   let ctx=null, on=true;
@@ -520,41 +770,225 @@ const Sound = (()=>{
     g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
     o.connect(g).connect(c.destination); o.start(t0); o.stop(t0+dur+0.05);
   }
-  function bellAt(f,t){ // 编钟：非谐泛音
+  function bellAt(f,t){
     tone(f,t,2.2,.22); tone(f*2.76,t,1.1,.07); tone(f*5.4,t,.5,.03); tone(f*0.5,t,1.6,.06);
   }
   return {
-    unlock(){ ac().resume(); },
+    unlock(){ try{ ac().resume(); }catch(e){} },
     toggle(){ on=!on; return on; },
-    bell(){ if(!on) return; const t=ac().currentTime; bellAt(659,t); bellAt(988,t+.12); },
-    wood(){ if(!on) return; const c=ac(), t=c.currentTime;
+    bell(){ if(!on) return; try{ const t=ac().currentTime; bellAt(659,t); bellAt(988,t+.12); }catch(e){} },
+    wood(){ if(!on) return; try{ const c=ac(), t=c.currentTime;
       tone(190,t,.18,.35,"triangle"); tone(420,t,.06,.12,"square");
       const n=c.createBufferSource(), b=c.createBuffer(1,c.sampleRate*.05,c.sampleRate), d=b.getChannelData(0);
       for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length);
       const bp=c.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=900; bp.Q.value=3;
       const g=c.createGain(); g.gain.value=.4; n.buffer=b; n.connect(bp).connect(g).connect(c.destination); n.start(t);
-    },
-    finale(){ if(!on) return; const t=ac().currentTime;
+    }catch(e){} },
+    finale(){ if(!on) return; try{ const t=ac().currentTime;
       [523,587,659,784,880,1047].forEach((f,i)=>bellAt(f,t+i*.16)); bellAt(523,t+1.1); bellAt(784,t+1.1);
-    }
+    }catch(e){} }
   };
 })();
+
+/* ---------- 后台 ---------- */
+const LS_KEY = "qzw-config-v1";
+const A = { D:null, sel:-1 };
+function setStatus(msg, bad){ const s=$("#aStatus"); s.textContent=msg||""; s.className="status"+(bad?" bad":""); }
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+
+function openAdmin(){
+  A.D = clone(CFG); A.sel=-1;
+  $("#aTitle").value=A.D.title; $("#aBook").value=A.D.book; $("#aAuthor").value=A.D.author; $("#aSel").value=A.D.sel;
+  $("#aText").value=A.D.text; $("#aInfo").value=A.D.info;
+  setStatus("");
+  renderAdmin();
+  admin.classList.remove("hide");
+  $("#aTitle").focus();
+}
+function closeAdmin(){ admin.classList.add("hide"); }
+
+function pruneErrors(){
+  const ch=[...A.D.text];
+  A.D.errors=A.D.errors.filter(e=>e.i<ch.length && e.wrong && e.wrong!==ch[e.i]);
+}
+function renderAdmin(){
+  const ch=[...A.D.text];
+  $("#aCount").textContent="共 "+ch.length+" 字（标点和空格已自动去掉）";
+  $("#aErrCount").textContent="　已设 "+A.D.errors.length+" 处";
+  const pick=$("#aPick"); pick.innerHTML="";
+  const map=new Map(A.D.errors.map(e=>[e.i,e]));
+  ch.forEach((c,i)=>{
+    const b=document.createElement("button");
+    b.type="button"; b.className="pc"+(map.has(i)?" sel":"")+(A.sel===i?" cur":""); b.dataset.i=i;
+    b.setAttribute("aria-label","第"+(i+1)+"字 "+c+(map.has(i)?"，已改为"+map.get(i).wrong:""));
+    b.textContent=c;
+    if(map.has(i)){ const s=document.createElement("sup"); s.textContent=map.get(i).wrong; b.appendChild(s); }
+    pick.appendChild(b);
+  });
+  const list=$("#aList"); list.innerHTML="";
+  if(!A.D.errors.length){
+    const li=document.createElement("li"); li.className="none"; li.textContent="还没有设错字。点上面的字，或用随机生成。"; list.appendChild(li);
+  }
+  [...A.D.errors].sort((a,b)=>a.i-b.i).forEach(e=>{
+    const li=document.createElement("li");
+    const pos=document.createElement("span"); pos.className="pos"; pos.textContent="第 "+(e.i+1)+" 字";
+    const chg=document.createElement("span"); chg.className="chg";
+    chg.append(document.createTextNode(ch[e.i]+" → "));
+    const w=document.createElement("i"); w.textContent=e.wrong; chg.appendChild(w);
+    const nt=document.createElement("span"); nt.className="nt"; nt.textContent=e.note||"";
+    const rm=document.createElement("button"); rm.type="button"; rm.className="mini"; rm.textContent="移除"; rm.dataset.rm=e.i;
+    li.append(pos,chg,nt,rm); list.appendChild(li);
+  });
+  const ed=$("#aEditor");
+  if(A.sel>=0 && A.sel<ch.length){
+    ed.hidden=false;
+    const cur=A.D.errors.find(e=>e.i===A.sel);
+    $("#eWho").textContent="第"+(A.sel+1)+"字「"+ch[A.sel]+"」→";
+    if(ed.dataset.for!==String(A.sel)){ $("#eWrong").value=cur?cur.wrong:""; $("#eNote").value=cur?cur.note:""; ed.dataset.for=A.sel; }
+    $("#eDel").hidden=!cur;
+  } else { ed.hidden=true; ed.dataset.for=""; }
+}
+
+$("#aPick").addEventListener("click",e=>{
+  const b=e.target.closest(".pc"); if(!b) return;
+  A.sel=+b.dataset.i; $("#aEditor").dataset.for=""; renderAdmin();
+  $("#eWrong").focus();
+});
+$("#aList").addEventListener("click",e=>{
+  const b=e.target.closest("[data-rm]"); if(!b) return;
+  A.D.errors=A.D.errors.filter(x=>x.i!==+b.dataset.rm); if(A.sel===+b.dataset.rm) A.sel=-1; renderAdmin();
+});
+$("#eOk").onclick=()=>{
+  const ch=[...A.D.text], orig=ch[A.sel];
+  const w=[...$("#eWrong").value.trim()][0];
+  if(!w) return setStatus("请填一个字作讹字",true);
+  if(w===orig) return setStatus("讹字不能和原字相同",true);
+  const note=$("#eNote").value.trim().slice(0,200);
+  A.D.errors=A.D.errors.filter(x=>x.i!==A.sel).concat([{i:A.sel,wrong:w,note}]);
+  A.sel=-1; setStatus(""); renderAdmin();
+};
+$("#eDel").onclick=()=>{ A.D.errors=A.D.errors.filter(x=>x.i!==A.sel); A.sel=-1; renderAdmin(); };
+$("#eCancel").onclick=()=>{ A.sel=-1; renderAdmin(); };
+$("#eWrong").addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.isComposing){ e.preventDefault(); $("#eOk").click(); } });
+$("#eNote").addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.isComposing){ e.preventDefault(); $("#eOk").click(); } });
+
+$("#aText").addEventListener("input",()=>{
+  A.D.text=normText($("#aText").value); pruneErrors();
+  if(A.sel>=[...A.D.text].length) A.sel=-1;
+  $("#aEditor").dataset.for=""; renderAdmin();
+});
+["Title:title","Book:book","Author:author","Sel:sel"].forEach(p=>{
+  const [id,key]=p.split(":"); $("#a"+id).addEventListener("input",e=>{ A.D[key]=e.target.value; });
+});
+$("#aInfo").addEventListener("input",e=>{ A.D.info=e.target.value; });
+
+function randomErrors(n){
+  const ch=[...A.D.text], len=ch.length;
+  n=Math.max(1,Math.min(n,Math.floor(len/2)));
+  const idx=ch.map((_,i)=>i); for(let i=idx.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [idx[i],idx[j]]=[idx[j],idx[i]]; }
+  const out=[]; const used=new Set();
+  for(const i of idx){
+    if(out.length>=n) break;
+    if(used.has(i-1)||used.has(i+1)) continue;
+    const c=ch[i]; let w=null;
+    const groups=SIM.filter(g=>g.includes(c));
+    if(groups.length){ const g=[...groups[Math.floor(Math.random()*groups.length)]].filter(x=>x!==c); if(g.length) w=g[Math.floor(Math.random()*g.length)]; }
+    if(!w){ const pool=ch.filter(x=>x!==c); if(!pool.length) continue; w=pool[Math.floor(Math.random()*pool.length)]; }
+    used.add(i); out.push({i,wrong:w,note:""});
+  }
+  return out;
+}
+$("#aRand").onclick=()=>{
+  const n=parseInt($("#aRandN").value,10)||5;
+  A.D.errors=randomErrors(n); A.sel=-1; renderAdmin();
+  setStatus("已随机生成 "+A.D.errors.length+" 处，可以再点字微调。");
+};
+$("#aClear").onclick=()=>{ A.D.errors=[]; A.sel=-1; renderAdmin(); setStatus(""); };
+
+function draftConfig(){
+  const d=clone(A.D); d.text=normText($("#aText").value); d.info=$("#aInfo").value;
+  return d;
+}
+function checkDraft(d){
+  if([...normText(d.text)].length<8){ setStatus("原文至少要有 8 个字",true); return null; }
+  const c=sanitize(d);
+  if(c===DEFAULT && !d.errors.length){ setStatus("至少要设一处错字",true); return null; }
+  return c;
+}
+$("#aTry").onclick=()=>{
+  const c=checkDraft(draftConfig()); if(!c) return;
+  applyConfig(c,false); closeAdmin();
+};
+$("#aSave").onclick=async()=>{
+  const c=checkDraft(draftConfig()); if(!c) return;
+  const btn=$("#aSave"); btn.disabled=true;
+  try{
+    if(DBH){
+      await DBH.doc("config/game").set(c);
+      try{ localStorage.removeItem(LS_KEY); }catch(e){}
+      setStatus("已保存。大家下次打开，看到的就是这一题。");
+    } else {
+      try{ localStorage.setItem(LS_KEY,JSON.stringify(c)); setStatus("没有连上共享存储，这一题只保存在这台设备上。"); }
+      catch(e){ setStatus("保存失败，浏览器不允许存储。",true); btn.disabled=false; return; }
+    }
+    applyConfig(c,false);
+  }catch(err){
+    try{ localStorage.setItem(LS_KEY,JSON.stringify(c)); }catch(e){}
+    setStatus("没有写入权限（"+((err&&err.code)||"错误")+"），已先保存在这台设备上。",true);
+    applyConfig(c,false);
+  }
+  btn.disabled=false;
+};
+$("#aReset").onclick=async()=>{
+  try{ localStorage.removeItem(LS_KEY); }catch(e){}
+  try{ if(DBH) await DBH.doc("config/game").delete(); }catch(e){}
+  applyConfig(DEFAULT,false);
+  A.D=clone(DEFAULT); A.sel=-1;
+  $("#aTitle").value=A.D.title; $("#aBook").value=A.D.book; $("#aAuthor").value=A.D.author; $("#aSel").value=A.D.sel;
+  $("#aText").value=A.D.text; $("#aInfo").value=A.D.info;
+  renderAdmin(); setStatus("已恢复为默认的《千字文》二百字。");
+};
+$("#aClose").onclick=closeAdmin;
 
 /* ---------- 绑定 ---------- */
 $("#btnAgain").onclick=()=>newRound(true);
 $("#btnNew").onclick=()=>newRound(true);
 $("#btnReveal").onclick=()=>reveal();
-// 浏览器要求用户交互后才能出声：首次点击即解锁
+$("#btnInfo").onclick=openInfo;
+$("#btnSrc").onclick=openInfo;
+$("#btnAdmin").onclick=openAdmin;
+$("#btnInfoClose").onclick=closeInfo;
+info.addEventListener("click",e=>{ if(e.target===info) closeInfo(); });
 document.addEventListener("pointerdown",()=>Sound.unlock(),{once:true});
 document.addEventListener("keydown",()=>Sound.unlock(),{once:true});
 $("#btnSound").onclick=e=>{ e.target.textContent = Sound.toggle() ? "声 · 开" : "声 · 关"; };
 document.addEventListener("keydown",e=>{
   const k=e.key.toLowerCase();
+  if(isOpen(admin)){ if(k==="escape") closeAdmin(); return; }
+  const tag=(e.target&&e.target.tagName)||"";
+  if(tag==="INPUT"||tag==="TEXTAREA") return;
+  if(isOpen(info)){ if(k==="escape"||k==="i") closeInfo(); return; }
   if(k==="n") newRound(true);
   if(k==="r") reveal();
   if(k==="m") $("#btnSound").click();
+  if(k==="i") openInfo();
 });
+
+/* ---------- 启动：先用默认题排满一屏，再接上共享存储与身份 ---------- */
+renderTexts();
 newRound(true);
+
+(async()=>{
+  try{ if(window.claude&&window.claude.use){ DBH=await window.claude.use("db"); } }catch(e){ DBH=null; }
+  if(DBH){
+    try{
+      DBH.doc("config/game").onSnapshot(snap=>{
+        if(snap.exists) applyIfChanged(sanitize(snap.data())); else applyIfChanged(DEFAULT);
+      }, ()=>{});
+    }catch(e){}
+  } else {
+    try{ const raw=localStorage.getItem(LS_KEY); if(raw) applyIfChanged(sanitize(JSON.parse(raw))); }catch(e){}
+  }
+})();
 </script>
-</body>
-</html>
+</body></html>
